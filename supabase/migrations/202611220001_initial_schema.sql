@@ -264,7 +264,9 @@ begin
           reason := 'Karyawan belum memiliki check-out dari event masuk sebelumnya';
         else resolved_type := 'check_in'; end if;
       else
-        if previous_event.id is null or previous_event.event_type <> 'check_in' then
+        if previous_event.id is not null and previous_event.event_type='check_out' and previous_event.occurred_at > p_occurred_at - interval '90 seconds' then
+          reason := 'Event keluar duplikat dalam jendela 90 detik';
+        elsif previous_event.id is null or previous_event.event_type <> 'check_in' then
           reason := 'Check-out tidak memiliki check-in yang sesuai';
         else resolved_type := 'check_out'; end if;
       end if;
@@ -306,6 +308,7 @@ begin
   select * into target from public.attendance_events
     where id=p_event_id and company_id=reviewer.company_id for update;
   if not found then raise exception 'EVENT_NOT_FOUND'; end if;
+  if reviewer.role <> 'super_admin' and target.factory_id <> reviewer.factory_id then raise exception 'REVIEW_FORBIDDEN'; end if;
   if p_decision not in ('approved','rejected','escalated') then raise exception 'INVALID_REVIEW_DECISION'; end if;
   old_status := target.status;
   old_review_status := target.review_status;
