@@ -1,6 +1,6 @@
 # PlantTrack AI
 
-Aplikasi web frontend untuk pemantauan dan pengelolaan absensi karyawan pabrik.
+Aplikasi web pemantauan dan pengelolaan absensi karyawan pabrik.
 
 ## Menjalankan aplikasi
 
@@ -11,7 +11,7 @@ npm install
 npm run dev
 ```
 
-Untuk memeriksa TypeScript dan membuat build produksi:
+Pemeriksaan dan build:
 
 ```bash
 npm run typecheck
@@ -21,32 +21,24 @@ npm run preview
 
 ## Teknologi
 
-- React 19 + TypeScript
+- React 18 + TypeScript
 - Vite 6
+- Supabase PostgreSQL dan Auth (fondasi integrasi)
+- Vercel Functions
 - Lucide React
-- CSS responsif, tema terang/gelap
 
-## Modul
+## Modul frontend
 
-- Dashboard ringkasan kehadiran dan tren
-- Peta denah area pabrik dan marker kamera (ilustrasi)
-- Monitoring CCTV dan status kamera (pratinjau demo)
-- Data karyawan: pencarian, filter, tambah karyawan
-- Data absensi: pencarian, filter, tinjauan manual
-- Manajemen shift
-- Struktur pabrik dan departemen
-- AI Analytics (data simulasi)
-- Laporan (pratinjau)
-- Notifikasi
-- Pilihan bahasa Indonesia/English untuk navigasi dan judul halaman, serta tema terang/gelap
+Dashboard, peta area, monitoring CCTV, data karyawan, absensi, shift, struktur pabrik, AI Analytics, laporan, notifikasi, pengaturan.
 
-## Dokumen proyek
+## Dokumen
 
-- [Product Requirements Document](docs/01-PRD-PlantTrack-AI.md)
-- [Flow Sistem dan Alur Pengguna](docs/02-Flow-Sistem-PlantTrack-AI.md)
+- [PRD](docs/01-PRD-PlantTrack-AI.md)
+- [Flow Sistem](docs/02-Flow-Sistem-PlantTrack-AI.md)
+- [Setup Supabase](docs/03-Supabase-Setup.md)
 
-## Pemeriksaan kualitas\n\nGitHub Actions menjalankan pemeriksaan TypeScript dan build produksi setiap ada push ke branch `main` atau pull request. Hasil build perlu dilihat pada tab Actions setelah workflow selesai.\n\n## Status integrasi
+## Status dan batasan
 
-Versi ini adalah frontend demonstrasi. Data contoh disimpan di state aplikasi dan akan kembali ke data awal saat halaman dimuat ulang. CCTV/IP Camera, pengenalan wajah, penentuan arah masuk/keluar, model AI, database, API, autentikasi produksi, otorisasi role, audit server, dan ekspor file belum terhubung.
+Database Supabase dan skema awal sudah dibuat. Variabel URL dan publishable key telah dimasukkan ke Vercel. API memerlukan secret key server-only sebelum dapat mengakses database sebagai backend. Sebagian tampilan frontend masih menggunakan data demo. CCTV, pengenalan wajah, AI provider, dan integrasi kamera belum siap produksi.
 
-Jangan gunakan data demonstrasi sebagai catatan kehadiran resmi. Untuk produksi, terapkan tinjauan manusia, metode absensi alternatif, perlindungan data biometrik, dan audit akses.
+Jangan gunakan data demo sebagai absensi resmi. Gunakan tinjauan manusia, metode absensi alternatif, perlindungan data biometrik, dan audit akses.
