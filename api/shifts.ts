@@ -5,6 +5,7 @@ export default async function handler(req: VercelRequest,res: VercelResponse){
  if(!method(req,res,['GET'])) return;
  try{
   const session=await requireUser(req); if(!session) return json(res,401,{error:'Silakan masuk kembali.'});
+  if(!['super_admin','factory_admin','hrd','supervisor'].includes(session.profile.role)) return json(res,403,{error:'Role tidak memiliki izin melihat shift.'});
   const db=adminClient();
   let query=db.from('shifts').select('id,factory_id,name,start_time,end_time,tolerance_minutes,crosses_midnight,work_days').order('start_time');
   if(session.profile.role==='super_admin'){
