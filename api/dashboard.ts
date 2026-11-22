@@ -18,7 +18,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const employeeQuery = session.profile.role === 'super_admin' ? employees : employees.eq('factory_id', session.profile.factory_id);
     const offlineBase = db.from('cameras').select('id', { count: 'exact', head: true }).eq('status','offline');
     const offline = session.profile.role === 'super_admin' ? offlineBase : offlineBase.eq('factory_id', session.profile.factory_id);
-    const [a,b,c,d,e] = await Promise.all([employeeQuery,events,review,checkins,offline];
+    const [a,b,c,d,e] = await Promise.all([employeeQuery,events,review,checkins,offline]);
     if ([a,b,c,d,e].some(x=>x.error)) throw [a,b,c,d,e].find(x=>x.error)?.error;
     return json(res,200,{ data:{ active_employees:a.count||0, attendance_events_today:b.count||0, events_needing_review:c.count||0, verified_check_ins_today:d.count||0, offline_cameras:e.count||0, as_of:new Date().toISOString(), scope:session.profile.role==='super_admin'?'company':'assigned_factory' } });
   } catch(error) { return fail(res,error); }
