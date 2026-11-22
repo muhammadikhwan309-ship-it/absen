@@ -5,20 +5,23 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && npm run typecheck:server",
     "build": "tsc --noEmit && vite build",
-    "preview": "vite preview --host 0.0.0.0"
+    "preview": "vite preview --host 0.0.0.0",
+    "typecheck:server": "tsc --noEmit --strict --target ES2022 --module NodeNext --moduleResolution NodeNext --esModuleInterop --skipLibCheck --types node api/**/*.ts api/*.ts"
   },
   "dependencies": {
     "@vitejs/plugin-react": "4.4.1",
     "lucide-react": "0.468.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "vite": "6.3.5"
+    "vite": "6.3.5",
+    "@supabase/supabase-js": "^2.57.4"
   },
   "devDependencies": {
     "@types/react": "18.3.20",
     "@types/react-dom": "18.3.6",
-    "typescript": "5.8.3"
+    "typescript": "5.8.3",
+    "@vercel/node": "^5.3.0"
   }
 }
