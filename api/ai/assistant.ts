@@ -5,6 +5,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!method(req, res, ['POST'])) return;
   const session = await requireUser(req).catch(() => null);
   if (!session) return json(res, 401, { error: 'Silakan masuk untuk menggunakan AI Assistant.' });
+  if (!['super_admin','factory_admin','hrd','supervisor'].includes(session.profile.role)) return json(res, 403, { error: 'Role tidak memiliki izin menggunakan AI Assistant.' });
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) return json(res, 503, { error: 'AI belum aktif. Tambahkan OPENAI_API_KEY pada Environment Variables Vercel.' });
   try {
@@ -13,10 +14,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!question || question.length > 1000) return json(res, 400, { error: 'Pertanyaan wajib diisi dan maksimal 1.000 karakter.' });
     const db = adminClient();
     const since = new Date(Date.now() - 30 * 86400000).toISOString();
+    const scope = (query: any) => session.profile.role === 'super_admin' ? query : query.eq('factory_id', session.profile.factory_id);
     const [{ count: total }, { count: needsReview }, { count: late }] = await Promise.all([
-      db.from('attendance_events').select('id', { count: 'exact', head: true }).eq('company_id', session.profile.company_id).gte('occurred_at', since),
-      db.from('attendance_events').select('id', { count: 'exact', head: true }).eq('company_id', session.profile.company_id).eq('status', 'needs_review').gte('occurred_at', since),
-      db.from('attendance_events').select('id', { count: 'exact', head: true }).eq('company_id', session.profile.company_id).eq('status', 'verified').eq('event_type', 'check_in').gte('occurred_at', since)
+      scope(db.from('attendance_events').select('id', { count: 'exact', head: true }).eq('company_id', session.profile.company_id)).gte('occurred_at', since),
+      scope(db.from('attendance_events').select('id', { count: 'exact', head: true }).eq('company_id', session.profile.company_id)).eq('status', 'needs_review').gte('occurred_at', since),
+      scope(db.from('attendance_events').select('id', { count: 'exact', head: true }).eq('company_id', session.profile.company_id)).eq('status', 'verified').eq('event_type', 'check_in').gte('occurred_at', since)
     ]);
     const model = process.env.OPENAI_MODEL || 'gpt-4.1-mini';
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
