@@ -271,6 +271,8 @@ as $$
 declare
   reviewer public.profiles;
   target public.attendance_events;
+  old_status text;
+  old_review_status public.review_status;
 begin
   select * into reviewer from public.profiles where id=p_reviewer_id and is_active=true;
   if not found or reviewer.role not in ('super_admin','factory_admin','hrd','supervisor','security') then
@@ -281,6 +283,8 @@ begin
     where id=p_event_id and company_id=reviewer.company_id for update;
   if not found then raise exception 'EVENT_NOT_FOUND'; end if;
   if p_decision not in ('approved','rejected','escalated') then raise exception 'INVALID_REVIEW_DECISION'; end if;
+  old_status := target.status;
+  old_review_status := target.review_status;
   update public.attendance_events set
     review_status=p_decision,
     status=case when p_decision='approved' then 'verified' when p_decision='rejected' then 'rejected' else 'needs_review' end,
@@ -290,7 +294,7 @@ begin
   values(p_event_id,p_reviewer_id,p_decision,trim(p_reason));
   insert into public.audit_logs(company_id,actor_id,action,target_type,target_id,before_value,after_value)
   values(reviewer.company_id,p_reviewer_id,'attendance.reviewed','attendance_event',p_event_id::text,
-    jsonb_build_object('status',target.status,'review_status','pending'),
+    jsonb_build_object('status',old_status,'review_status',old_review_status),
     jsonb_build_object('status',target.status,'review_status',p_decision,'reason',trim(p_reason)));
   return target;
 end $$;
