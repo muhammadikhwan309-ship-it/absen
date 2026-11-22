@@ -210,6 +210,12 @@ as $$
 declare
   c public.cameras;
   e public.employees;
+  g public.gates;
+  sh public.shifts;
+  local_time time;
+  local_dow integer;
+  local_tz text;
+  shift_day integer;
   previous_event public.attendance_events;
   result public.attendance_events;
   resolved_type public.attendance_event_type;
@@ -218,18 +224,35 @@ declare
 begin
   select * into c from public.cameras where id=p_camera_id and status <> 'offline';
   if not found then raise exception 'CAMERA_NOT_ACTIVE'; end if;
-  select company_id into company_uuid from public.factories where id=c.factory_id;
+  select company_id,timezone into company_uuid,local_tz from public.factories where id=c.factory_id;
   if company_uuid is null then raise exception 'FACTORY_NOT_FOUND'; end if;
+  select * into g from public.gates where id=c.gate_id and is_active=true;
+  if not found then raise exception 'GATE_NOT_ACTIVE'; end if;
   if exists(select 1 from public.attendance_events where factory_id=c.factory_id and external_event_id=p_external_event_id) then
     select * into result from public.attendance_events where factory_id=c.factory_id and external_event_id=p_external_event_id;
     return result;
   end if;
   if p_direction not in ('in','out') or p_confidence is null or p_confidence < 0.92 or p_employee_id is null then
     reason := 'Arah, identitas, atau confidence belum memenuhi ambang verifikasi';
+  elsif (g.direction_mode='in_only' and p_direction<>'in') or (g.direction_mode='out_only' and p_direction<>'out') then
+    reason := 'Arah lintasan tidak sesuai konfigurasi gerbang';
   else
     select * into e from public.employees where id=p_employee_id and factory_id=c.factory_id and employment_status='active';
     if not found then reason := 'Karyawan tidak aktif atau tidak ditemukan pada pabrik ini';
     else
+      select * into sh from public.shifts where id=e.shift_id and factory_id=c.factory_id;
+      if not found then reason := 'Karyawan belum memiliki shift aktif';
+      else
+        local_time := (p_occurred_at at time zone coalesce(local_tz,'Asia/Jakarta'))::time;
+        local_dow := extract(isodow from (p_occurred_at at time zone coalesce(local_tz,'Asia/Jakarta')))::integer;
+        shift_day := case when sh.crosses_midnight and local_time <= sh.end_time then ((local_dow + 5) % 7) + 1 else local_dow end;
+        if not (shift_day = any(sh.work_days)) or
+          (not sh.crosses_midnight and (local_time < sh.start_time - interval '2 hours' or local_time > sh.end_time + interval '2 hours')) or
+          (sh.crosses_midnight and not (local_time >= sh.start_time - interval '2 hours' or local_time <= sh.end_time + interval '2 hours')) then
+          reason := 'Waktu event berada di luar rentang shift yang dikonfigurasi';
+        end if;
+      end if;
+      if reason is null then
       select * into previous_event from public.attendance_events
       where employee_id=e.id and status='verified'
         and occurred_at >= date_trunc('day',p_occurred_at) - interval '1 day'
@@ -244,6 +267,7 @@ begin
         if previous_event.id is null or previous_event.event_type <> 'check_in' then
           reason := 'Check-out tidak memiliki check-in yang sesuai';
         else resolved_type := 'check_out'; end if;
+      end if;
       end if;
     end if;
   end if;
