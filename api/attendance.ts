@@ -6,6 +6,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const session = await requireUser(req);
     if (!session) return json(res, 401, { error: 'Silakan masuk kembali.' });
+    if (!['super_admin','factory_admin','hrd','supervisor','security'].includes(session.profile.role)) return json(res, 403, { error: 'Role tidak memiliki izin melihat absensi.' });
     const page = Math.max(1, Number(req.query.page || 1));
     const limit = Math.min(100, Math.max(1, Number(req.query.limit || 50)));
     const db = adminClient();
