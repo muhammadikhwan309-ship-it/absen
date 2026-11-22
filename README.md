@@ -38,14 +38,14 @@ npm run preview
 - AI Analytics (data simulasi)
 - Laporan (pratinjau)
 - Notifikasi
-- Pengaturan bahasa Indonesia/English dan tema
+- Pilihan bahasa Indonesia/English untuk navigasi dan judul halaman, serta tema terang/gelap
 
 ## Dokumen proyek
 
 - [Product Requirements Document](docs/01-PRD-PlantTrack-AI.md)
 - [Flow Sistem dan Alur Pengguna](docs/02-Flow-Sistem-PlantTrack-AI.md)
 
-## Status integrasi
+## Pemeriksaan kualitas\n\nGitHub Actions menjalankan pemeriksaan TypeScript dan build produksi setiap ada push ke branch `main` atau pull request. Hasil build perlu dilihat pada tab Actions setelah workflow selesai.\n\n## Status integrasi
 
 Versi ini adalah frontend demonstrasi. Data contoh disimpan di state aplikasi dan akan kembali ke data awal saat halaman dimuat ulang. CCTV/IP Camera, pengenalan wajah, penentuan arah masuk/keluar, model AI, database, API, autentikasi produksi, otorisasi role, audit server, dan ekspor file belum terhubung.
 
