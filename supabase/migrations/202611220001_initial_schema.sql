@@ -257,3 +257,42 @@ begin
 end $$;
 revoke all on function public.ingest_camera_event(uuid,text,uuid,timestamptz,text,numeric,jsonb) from public, anon, authenticated;
 grant execute on function public.ingest_camera_event(uuid,text,uuid,timestamptz,text,numeric,jsonb) to service_role;
+
+
+-- Atomic review decision: update event, review history and audit trail in one transaction.
+create or replace function public.review_attendance_event(
+  p_event_id uuid,
+  p_reviewer_id uuid,
+  p_decision public.review_status,
+  p_reason text
+) returns public.attendance_events
+language plpgsql security definer set search_path=public
+as $$
+declare
+  reviewer public.profiles;
+  target public.attendance_events;
+begin
+  select * into reviewer from public.profiles where id=p_reviewer_id and is_active=true;
+  if not found or reviewer.role not in ('super_admin','factory_admin','hrd','supervisor','security') then
+    raise exception 'REVIEW_FORBIDDEN';
+  end if;
+  if length(trim(coalesce(p_reason,''))) < 3 then raise exception 'REVIEW_REASON_REQUIRED'; end if;
+  select * into target from public.attendance_events
+    where id=p_event_id and company_id=reviewer.company_id for update;
+  if not found then raise exception 'EVENT_NOT_FOUND'; end if;
+  if p_decision not in ('approved','rejected','escalated') then raise exception 'INVALID_REVIEW_DECISION'; end if;
+  update public.attendance_events set
+    review_status=p_decision,
+    status=case when p_decision='approved' then 'verified' when p_decision='rejected' then 'rejected' else 'needs_review' end,
+    review_reason=trim(p_reason)
+  where id=p_event_id returning * into target;
+  insert into public.review_logs(event_id,reviewer_id,decision,reason)
+  values(p_event_id,p_reviewer_id,p_decision,trim(p_reason));
+  insert into public.audit_logs(company_id,actor_id,action,target_type,target_id,before_value,after_value)
+  values(reviewer.company_id,p_reviewer_id,'attendance.reviewed','attendance_event',p_event_id::text,
+    jsonb_build_object('status',target.status,'review_status','pending'),
+    jsonb_build_object('status',target.status,'review_status',p_decision,'reason',trim(p_reason)));
+  return target;
+end $$;
+revoke all on function public.review_attendance_event(uuid,uuid,public.review_status,text) from public, anon, authenticated;
+grant execute on function public.review_attendance_event(uuid,uuid,public.review_status,text) to service_role;
