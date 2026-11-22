@@ -8,7 +8,7 @@
     "typecheck": "tsc --noEmit && npm run typecheck:server",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --host 0.0.0.0",
-    "typecheck:server": "tsc --noEmit --strict --target ES2022 --module NodeNext --moduleResolution NodeNext --esModuleInterop --skipLibCheck --types node api/**/*.ts api/*.ts"
+    "typecheck:server": "tsc -p tsconfig.server.json"
   },
   "dependencies": {
     "@vitejs/plugin-react": "4.4.1",
