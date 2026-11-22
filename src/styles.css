@@ -22,3 +22,4 @@
 .dark .site-map{filter:brightness(.72) saturate(.75)}
 .dark .setting button{background:var(--surface);border-color:var(--line);color:#b7c6d9}
 .dark .search input{color:var(--text)}
+.nav-close{display:none;border:0;background:transparent;color:#8290a3;padding:6px;margin-left:auto;border-radius:6px}.nav-close:hover{background:#f1f4f8}@media(max-width:850px){.nav-close{display:inline-flex;align-items:center;justify-content:center}.sidebar.mobile{box-shadow:12px 0 40px #14243a20}}
