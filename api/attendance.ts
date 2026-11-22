@@ -13,7 +13,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .select('id,employee_id,camera_id,gate_id,event_type,occurred_at,direction,confidence,status,review_status,review_reason,source', { count: 'exact' })
       .eq('company_id', session.profile.company_id).order('occurred_at', { ascending: false })
       .range((page - 1) * limit, page * limit - 1);
-    if (req.query.factory_id) query = query.eq('factory_id', String(req.query.factory_id));
+    if (session.profile.role !== 'super_admin') query = query.eq('factory_id', session.profile.factory_id);
+    if (req.query.factory_id && session.profile.role === 'super_admin') query = query.eq('factory_id', String(req.query.factory_id));
     if (req.query.status) query = query.eq('status', String(req.query.status));
     const { data, error, count } = await query;
     if (error) throw error;
