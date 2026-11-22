@@ -24,10 +24,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
     const full_name = String(body?.full_name || '').trim();
     const employee_code = String(body?.employee_code || '').trim();
-    if (!full_name || !employee_code || !session.profile.factory_id) return json(res, 400, { error: 'Nama, kode karyawan, dan pabrik wajib diisi.' });
+    const factory_id = session.profile.role === 'super_admin' ? String(body.factory_id || session.profile.factory_id || '') : session.profile.factory_id;
+    if (!full_name || !employee_code || !factory_id) return json(res, 400, { error: 'Nama, kode karyawan, dan pabrik wajib diisi.' });
     if (full_name.length > 120 || employee_code.length > 40) return json(res, 400, { error: 'Panjang data melebihi batas.' });
     const { data, error } = await db.from('employees').insert({
-      company_id: session.profile.company_id, factory_id: session.profile.factory_id,
+      company_id: session.profile.company_id, factory_id,
       full_name, employee_code, job_title: String(body.job_title || '').slice(0,120),
       department_id: body.department_id || null, shift_id: body.shift_id || null
     }).select().single();
