@@ -213,10 +213,13 @@ declare
   previous_event public.attendance_events;
   result public.attendance_events;
   resolved_type public.attendance_event_type;
+  company_uuid uuid;
   reason text;
 begin
   select * into c from public.cameras where id=p_camera_id and status <> 'offline';
   if not found then raise exception 'CAMERA_NOT_ACTIVE'; end if;
+  select company_id into company_uuid from public.factories where id=c.factory_id;
+  if company_uuid is null then raise exception 'FACTORY_NOT_FOUND'; end if;
   if exists(select 1 from public.attendance_events where factory_id=c.factory_id and external_event_id=p_external_event_id) then
     select * into result from public.attendance_events where factory_id=c.factory_id and external_event_id=p_external_event_id;
     return result;
@@ -245,7 +248,7 @@ begin
     end if;
   end if;
   insert into public.attendance_events(company_id,factory_id,employee_id,camera_id,gate_id,event_type,occurred_at,direction,confidence,status,review_status,review_reason,external_event_id,metadata)
-  values(c.company_id,c.factory_id,case when reason is null then p_employee_id else null end,c.id,c.gate_id,
+  values(company_uuid,c.factory_id,case when reason is null then p_employee_id else null end,c.id,c.gate_id,
     case when reason is null then resolved_type else null end,p_occurred_at,p_direction,p_confidence,
     case when reason is null then 'verified' else 'needs_review' end,
     case when reason is null then 'approved' else 'pending' end,reason,p_external_event_id,coalesce(p_metadata,'{}'::jsonb))
