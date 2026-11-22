@@ -1,24 +1,52 @@
 # PlantTrack AI
 
-Sistem web pemantauan dan pengelolaan absensi karyawan pabrik berbantuan AI.
+Aplikasi web frontend untuk pemantauan dan pengelolaan absensi karyawan pabrik.
 
-## Tahap pengembangan
+## Menjalankan aplikasi
 
-Tahap pertama berfokus pada frontend menggunakan data demonstrasi. Integrasi backend, database, CCTV/IP Camera, pemrosesan video, pengenalan wajah, dan notifikasi nyata dilakukan pada tahap berikutnya.
+Persyaratan: Node.js 20 atau lebih baru.
+
+```bash
+npm install
+npm run dev
+```
+
+Untuk memeriksa TypeScript dan membuat build produksi:
+
+```bash
+npm run typecheck
+npm run build
+npm run preview
+```
+
+## Teknologi
+
+- React 19 + TypeScript
+- Vite 6
+- Lucide React
+- CSS responsif, tema terang/gelap
+
+## Modul
+
+- Dashboard ringkasan kehadiran dan tren
+- Peta denah area pabrik dan marker kamera (ilustrasi)
+- Monitoring CCTV dan status kamera (pratinjau demo)
+- Data karyawan: pencarian, filter, tambah karyawan
+- Data absensi: pencarian, filter, tinjauan manual
+- Manajemen shift
+- Struktur pabrik dan departemen
+- AI Analytics (data simulasi)
+- Laporan (pratinjau)
+- Notifikasi
+- Pengaturan bahasa Indonesia/English dan tema
 
 ## Dokumen proyek
 
-- [PRD PlantTrack AI](docs/01-PRD-PlantTrack-AI.md)
+- [Product Requirements Document](docs/01-PRD-PlantTrack-AI.md)
 - [Flow Sistem dan Alur Pengguna](docs/02-Flow-Sistem-PlantTrack-AI.md)
 
-## Teknologi awal
+## Status integrasi
 
-- React + TypeScript + Vite
-- Tailwind CSS
-- React Router dan Lucide
-- Leaflet + OpenStreetMap
-- Recharts
+Versi ini adalah frontend demonstrasi. Data contoh disimpan di state aplikasi dan akan kembali ke data awal saat halaman dimuat ulang. CCTV/IP Camera, pengenalan wajah, penentuan arah masuk/keluar, model AI, database, API, autentikasi produksi, otorisasi role, audit server, dan ekspor file belum terhubung.
 
-## Catatan
-
-Tampilan CCTV pada tahap frontend merupakan pratinjau demonstrasi, bukan streaming kamera nyata. Hasil AI demonstrasi harus diberi label simulasi. Kejadian yang meragukan harus masuk tinjauan manual dan tidak boleh otomatis merugikan karyawan.
+Jangan gunakan data demonstrasi sebagai catatan kehadiran resmi. Untuk produksi, terapkan tinjauan manusia, metode absensi alternatif, perlindungan data biometrik, dan audit akses.
